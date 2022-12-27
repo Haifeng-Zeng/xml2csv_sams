@@ -1,0 +1,2 @@
+ne-id,ne-type,system-type,user-label,administrative-state,gpl-version,rack-id,sw-version,operational-mode,unit-type,unit-id,board-type,shelf-id,slot-id,auto-fusing-flag,fw-type,port-id,hw-address,configured-speed,fec-mode,tx-wavelength,tx-power,rx-power,temperature,bit-rate,voltage,electric-current
+133238001,fsu,c-fsu,-,unlocked,0,0,22.C.0-0100,normal-mode,fsup,0,fua1-a2,0,0,on,type1,0,20:db:ab:ef:d7:0c,s25g,rs-fec,850,-0.7,0.1,35,25.00,3.3,8.0

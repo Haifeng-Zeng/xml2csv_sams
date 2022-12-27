@@ -1,0 +1,89 @@
+<nc:rpc xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0">
+  <nc:get>
+    <nc:filter nc:type="subtree">
+      <cfsu:managed-element xmlns:cfsu="http://www.samsung.com/global/business/5GvRAN/ns/cfsu">
+        <cfsu:ne-id />
+        <cfsu:ne-type />
+        <cfsu:system-type />
+        <cfsu:user-label />
+        <cfsu:administrative-state />
+        <cfsu:gpl-version />
+        <cfsu:rack-id />
+        <cfsu:sw-version />
+        <cfsu:operational-mode />
+        <cfsu:hardware-management>
+          <cfsu:digital-unit>
+            <cfsu:digital-unit-entries>
+              <cfsu:unit-type />
+              <cfsu:unit-id />
+              <cfsu:board-type />
+              <cfsu:shelf-id />
+              <cfsu:slot-id />
+              <cfsu:external-port>
+                <cfsu:cpri-port>
+                  <cfsu:du-cpri-port-entries>
+                    <cfsu:port-id />
+                    <cfsu:enb-ne-id />
+                    <cfsu:enb-inode-id />
+                    <cfsu:connected-enb-digital-unit-board-id />
+                    <cfsu:connected-enb-digital-unit-port-id />
+                    <cfsu:cascade-radio-unit-id />
+                    <cfsu:cpri-speed-saved />
+                    <cfsu:du-cpri-port-mode />
+                    <cfsu:tx-wavelength />
+                    <cfsu:tx-power />
+                    <cfsu:rx-power />
+                    <cfsu:temperature />
+                    <cfsu:bit-rate />
+                    <cfsu:voltage />
+                    <cfsu:electric-current />
+                  </cfsu:du-cpri-port-entries>
+                  <cfsu:ru-cpri-port-entries>
+                    <cfsu:port-id />
+                    <cfsu:group-id />
+                    <cfsu:connected-du-cpri-port-id />
+                    <cfsu:adpf-ne-id />
+                    <cfsu:cpri-speed-saved />
+                    <cfsu:oru-fsu-reset-timer />
+                    <cfsu:tx-wavelength />
+                    <cfsu:tx-power />
+                    <cfsu:rx-power />
+                    <cfsu:temperature />
+                    <cfsu:bit-rate />
+                    <cfsu:voltage />
+                    <cfsu:electric-current />
+                  </cfsu:ru-cpri-port-entries>
+                  <cfsu:ecpri-port-entries>
+                    <cfsu:port-id />
+                    <cfsu:hw-address />
+                    <cfsu:administrative-state />
+                    <cfsu:user-label />
+                    <cfsu:configured-speed />
+                    <cfsu:fec-mode />
+                    <cfsu:connected-radio-unit-type />
+                    <cfsu:tx-wavelength />
+                    <cfsu:tx-power />
+                    <cfsu:rx-power />
+                    <cfsu:temperature />
+                    <cfsu:bit-rate />
+                    <cfsu:voltage />
+                    <cfsu:electric-current />
+                  </cfsu:ecpri-port-entries>
+                </cfsu:cpri-port>
+              </cfsu:external-port>
+              <cfsu:fw-type />
+              <cfsu:auto-fusing-flag />
+            </cfsu:digital-unit-entries>
+          </cfsu:digital-unit>
+          <cfsu:o-du-info>
+            <cfsu:o-du-entries>
+              <cfsu:unit-type />
+              <cfsu:unit-id />
+              <cfsu:port-id />
+            </cfsu:o-du-entries>
+          </cfsu:o-du-info>
+        </cfsu:hardware-management>
+      </cfsu:managed-element>
+    </nc:filter>
+  </nc:get>
+</nc:rpc>

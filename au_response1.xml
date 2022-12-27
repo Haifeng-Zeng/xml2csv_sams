@@ -1,0 +1,15 @@
+  <data>
+    <managed-element xmlns="http://www.samsung.com/global/business/5GvRAN/ns/gnb-au">
+      <du-reparenting>false</du-reparenting>
+      <ne-id>1300001</ne-id>
+      <ne-type>du</ne-type>
+      <system-type>gnb-au</system-type>
+      <user-label>13101300001_5GDU_DENTONDT_1_SC-ELSS</user-label>
+      <administrative-state>unlocked</administrative-state>
+      <operational-state>enabled</operational-state>
+      <rack-id>0</rack-id>
+      <sw-version>22.C.0-0100</sw-version>
+      <gpl-version>21B Gen1 AU GPL</gpl-version>
+      <operational-mode>normal-mode</operational-mode>
+    </managed-element>
+  </data>
