@@ -50,6 +50,8 @@ def add_keys(node, parent_path, parent_tag, carry_in) :
     for child in node :
         if list(child) :
             add_keys(child, current_path, node.tag, local_keys)
+
+# need to add all missing parameters
 #    ET.dump(node)
 #    print("Aaaa")
 
