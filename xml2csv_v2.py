@@ -14,7 +14,7 @@
 #       2. check file name format and report error
 #       3. add special character escaping
 #       4. fix the bug when reading 0 byte file
-# ################################################################## 
+# ###################################################################
 
 import xml.etree.ElementTree as ET
 import csv
@@ -50,10 +50,12 @@ def read_command_line_args() :
 
     parser.add_argument("res_files", nargs="+", help="response file(s), mandatory")
 
+    args = parser.parse_args()
+    
     if platform.system() == "Windows" :
         # for windows
         #parser.add_argument("third_files", help="Read xml files")
-        res_files = glob.glob(args.third_files)
+        res_files = glob.glob(args.res_files)
         pass
     elif platform.system() == "Linux" :
         #for linux
@@ -65,7 +67,7 @@ def read_command_line_args() :
         print("Unkown OS")
         sys.exit(1)
     
-    args = parser.parse_args()
+    
 #    print(args)
     err_file = "err.csv"
     cmd_file, conf_file, output_file, err_file, res_files = args.cmd_file, args.conf_file, args.output_file, args.err_file,args.res_files
@@ -177,7 +179,7 @@ def read_tree_from_xml2(xml_file) :
         if not list(root) and remove_ns(root.tag) == "data" :
             node = ET.Element("managed-element")
             return(node)
-	for child in root :
+    for child in root :
             if  remove_ns(root.tag) == "data" and child is None :
                 node = ET.Element("managed-element")
                 for child in root :
@@ -477,7 +479,7 @@ def write_file_266(write_list, file_name, conf_file) :
             else :
                 if v is None :
                     v = ""
-                dict2[para_dict[k][1]] = v
+                dict2[para_dict[k][1]] = add_quote(v)
         short_name_write_list.append(dict2)
 
     with open(conf_file,"r") as f :
@@ -486,13 +488,13 @@ def write_file_266(write_list, file_name, conf_file) :
     lines2 = list()
     for i in range(len(lines)) :
         lines[i] = lines[i].strip()
-    if len(lines[i]) == 0 :
-        continue
-    if len(lines[i]) == 0 :
-        continue
-    lines[i] = lines[i].split(":")[0]
-    if len(lines[i].split("|")[0]) > 0 :
-	    lines2.append(lines[i].split("|")[0])
+        if len(lines[i]) == 0 :
+            continue
+        if len(lines[i]) == 0 :
+            continue
+        lines[i] = lines[i].split(":")[0]
+        if len(lines[i].split("|")[0]) > 0 :
+	        lines2.append(lines[i].split("|")[0])
 
     header = list()
     header.append("USM_ID")
@@ -557,14 +559,14 @@ def add_quote(s) :
     return s
 
 
-(req_file, conf_file, output_file, err_file, res_files) = read_command_line_args()
+#(req_file, conf_file, output_file, err_file, res_files) = read_command_line_args()
 
-#req_file = "C:\\Scripts\\xml\\cmd.xml"
-#res_files = ["C:\\Scripts\\xml\\re-BloomingtonLarge1USM_DU_5160143.xml","C:\\Scripts\\xml\\re-EastSyracuseMedium1USM_DU_10148.xml","C:\\Scripts\\xml\\re-YonkersSmall1USM_DU_4620050.xml"]
+req_file = "C:\\Scripts\\xml\\bouncing\\download\\CMD.xml"
+res_files = ["C:\\Scripts\\xml\\bouncing\\download\\WestboroughMedium1USM_eNB_56003.xml"]
 #res_files = ["C:\\Scripts\\xml\\YonkersSmall1USM_eNB_85709.xml"]
 #res_files = ["C:\\Scripts\\xml\\BloomingtonLarge1USM_eNB_101001.xml"]
-#conf_file = "C:\\Scripts\\xml\\conf.conf"
-#output_file = "C:\\Scripts\\xml\\out.csv"
+conf_file = "C:\\Scripts\\xml\\bouncing\\download\\tdd-fdd-1.conf"
+output_file = "C:\\Scripts\\xml\\bouncing\\out.csv"
 
 para_dict = read_conf(conf_file)
 
@@ -598,9 +600,9 @@ for res_file in res_files:
     create_output_4(res_root, output_dict) 
 
 
-#output_file_name = "results.csv"
+output_file_name = "results.csv"
 write_file_266(csv_list, output_file, conf_file)
-if error_list :
-    write_error_list(error_list, err_file)
+#if error_list :
+#    write_error_list(error_list, err_file)
 #print(csv_list)
 #ET.dump(res_root)
