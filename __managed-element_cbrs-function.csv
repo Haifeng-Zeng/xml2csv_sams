@@ -1,2 +1,0 @@
-cbrs-mode,measure-unit,max-heartbeat-interval,cbrs-dp-server,second-cbrs-dp-server,periodic-grant-switch,periodic-grant-start-time,periodic-grant-interval,relinquish-suspended-grant
-cbrs-off,10mhz,50,https://[2001:4888:2a10:30:106:292:0:650b]:8447,,cbrs-periodic-grant-off,0,cbrs-periodic-grant-twenty-four-hour,cbrs-relinquish-off

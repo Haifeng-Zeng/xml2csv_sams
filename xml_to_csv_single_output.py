@@ -14,53 +14,117 @@ import sys
 
 
 def add_keys(node, parent_path, parent_tag, carry_in) :
-     # add all parameters to leaf level
-     # add 2 attributes: "path" indicates the hierarchy level; "to_output" indicates if children of this node should be printed, values are: "True", "False", "Done"
+     # add all parameters to all level
+     # add 3 attributes: "path" indicates the hierarchy level; "shortPath" id path without NS; "to_output" indicates if children of this node should be printed, values are: "True", "False", "Done"
 
-    to_output = "True"
+    if not list(node) :
+        return
+
+    leaf_branch = True
     local_keys = dict()
     
-    # update path info of current level
+    # find if current level is leaf branch
+    for child in node :
+        if list(child) :
+            leaf_branch = False
+            break
     
-    current_path = parent_path + "/" + parent_tag
+    # update path info of current level
+    current_path = parent_path + "/" + node.tag
+ 
     node.set("path", current_path)
+    node.set("shortPath",remove_ns(current_path))
+    #print("general: ", node.get("shortPath"))
 
     # Add parameters from parent to current level
+    if not leaf_branch :
+        node.set("to_output", "False") 
+        index = 0
+        for k in carry_in.keys() :
+            ele = ET.Element(k)
+            ele.text = carry_in[k]
+            node.insert(index,ele)
+            index += 1
+        for child in node :
+            if list(child) :
+                continue
+            local_keys[child.tag] = child.text
+        for child in node :
+            if list(child) :
+                add_keys(child, current_path, node.tag, local_keys)
+        return
+
+    # if current branch is a leaf branch
+    node.set("to_output", "True")
+    #print(node.tag,node.get("shortPath"))
     index = 0
     for k in carry_in.keys() :
         ele = ET.Element(k)
         ele.text = carry_in[k]
-#        print("new node")
-#        ET.dump(ele)
+        ele.set("to_output","inherited")
+        ele.set("path", current_path+"/"+ele.tag)
+        ele.set("shortPath",remove_ns(current_path+"/"+ele.tag))
         node.insert(index,ele)
         index += 1
-#        ET.SubElement(node, k).text = carry_in[k]
-
-    
-    # Read all parameters of current level
     for child in node :
-        if list(child) :
-            to_output = "False"
-        else :
-            local_keys[child.tag] = child.text
-    
-    node.set("to_output", to_output)
-
-    for child in node :
-        if list(child) :
-            add_keys(child, current_path, node.tag, local_keys)
-
-# need to add all missing parameters
-# add this line just to test github
-#    ET.dump(node)
-#    print("Aaaa")
+        if not child.get("to_output") :
+            child.set("to_output","True")
+            child.set("path", current_path+"/"+child.tag)
+            child.set("shortPath",remove_ns(current_path+"/"+child.tag))
 
 def add_dict(node, arr) :
+    
+    if not list(node) :
+        return
+    if not node.get("to_output") or node.get("to_output") == "False":
+        for child in node :
+            add_dict(child, arr)
+    
     dict1 = dict()
+    for k in para_list :
+        dict1[k] = ""
+    
     for child in node :
-#        if child.get("to_output") == "True" :
-        dict1[remove_ns(child.tag)] = child.text
-    arr.append(dict1)
+        l1 = child.get("shortPath")
+        if l1 :
+            l2 = l1.split("/")
+            l3 = l2[-1]
+            if l3 in para_list :
+                if dict1[l3] != "" :
+                    dict1[l3] = child.text
+                else :
+                    arr.append(dict1)
+            
+def add_dict2(node, arr) :
+    
+    queue = list()
+    queue.append(node)
+    while queue :
+        p = queue.pop(0)
+        if not list(p) :
+            continue
+        if not p.get("to_output") or p.get("to_output") == "False":
+            for child in p :
+                queue.append(child)
+            continue
+        dict1 = dict()
+        to_add = False
+        for k in para_list :
+            dict1[k] = ""
+    
+        for child in p :
+            l1 = child.get("shortPath")
+            if l1 :
+                l2 = l1.split("/")
+                l3 = l2[-1]
+                if l3 in para_list :
+                    dict1[l3] = child.text
+                    if child.get("to_output") == "True" :
+                        to_add = True
+        if to_add :
+#            print("add: ", dict1)
+            arr.append(dict1)
+            
 
 def remove_ns(source) :
     target = ""
@@ -76,59 +140,20 @@ def remove_ns(source) :
             target += ch
     return target
 
-def write_file(node) :
-    if node.get("to_output") != "True" :
-#        if node.get("to_output") != "False" :
-#            print("Found False: ", node.tag)
-        return
-    if "report-config-entries" not in node.get("path") :
-        return
-    
-    to_write = list()
-    
-    #Find by tag
-    search_tag = ".//" + node.tag
-    to_add = root_res.findall(search_tag)
-
-    # get attribute "path" of node
-    search_path = node.get("path")
-
-    for item in to_add :
-        if item.get("to_output") == "True" and item.get("path") == search_path :
-            add_dict(item, to_write)
-#        print("node added:",type(item),type(root_res))
-            item.set("to_output", "Done")
-    
-    file_name = node.get("path") + "_" + node.tag
-    file_name = remove_ns(file_name)
-    file_name = file_name + ".csv"
-    file_name = file_name.replace("/","_")
-
-#    print(file_name)
-#    print(type(to_write[0]))
-
-    full_keys = set()
-
-# Add missing keys if the key is missing
-    for item in to_write :
-        full_keys = full_keys.union(set(item.keys()))
-    
-    for item in to_write :
-        current_keys = set(item.keys())
-        for k in full_keys.difference(current_keys) :
-            item[k] = ""
+def write_file(write_list, file_name) :
 
     with open(file_name, 'w', newline = "", encoding="utf-8") as csvfile:
         # use dictWriter, on python 3
-        #writer = csv.DictWriter(csvfile, fieldnames=to_write[0].keys())
-        #writer.writeheader()
-        #writer.writerows(to_write)
+        writer = csv.DictWriter(csvfile, fieldnames=write_list[0].keys())
+        writer.writeheader()
+        writer.writerows(write_list)
 
         # use dictWriter, on python 2.6.6
-        fileds = list(to_write[0].keys())
-        writer = csv.DictWriter(csvfile, fieldnames=fileds)
-        #writer.writerow(fileds)
-        writer.writerows(to_write)
+#        fileds = list(write_list[0].keys())
+#        print(fileds)
+#        writer = csv.DictWriter(csvfile, fieldnames=fileds)
+#        writer.writerow(fileds)
+#        writer.writerows(write_list)
 
     
 def merge_keys_req(node_res, node_req) :
@@ -157,7 +182,30 @@ def merge_keys_req(node_res, node_req) :
         ele.text = "_"
         node_res.append(ele)
     
+def collect_all_para(node, output_list):
     
+    if not list(node) :
+        return
+    
+    if not node.get("to_output") or node.get("to_output") == "False" :
+        for child in node :
+            collect_all_para(child, output_list)
+    
+    
+    if node.get("to_output") == "True" :
+        key = node.get("path")
+        if key not in all_para.keys() :
+            all_para[key] = []
+            short_para[key] = []
+#        print(all_para[key])
+        for child in node :
+            if child.get("path") in all_para[key] :
+                continue
+            for line in output_list :
+                if line in child.get("shortPath") :
+                    all_para[key].append(child.get("path"))
+                    short_para[key].append(child.get("shortPath"))
+
 
 req_enabled = False
 req_file = ""
@@ -177,10 +225,15 @@ else :
 '''
 
 #req_file = "C:\\Scripts\\xml\\multi_request.xml"
-res_file = "C:\\Scripts\\xml\\b.xml"
-#es_file = "C:\\Scripts\\xml\\EastSyracuseMedium1USM_ACPF_71910100.xml"
-
+#res_file = "C:\\Scripts\\xml\\b.xml"
+res_file = "C:\\Scripts\\xml\\data\\RochesterMedium1USM_ACPF_70900100.xml"
+#res_file = "C:\\Users\\user\\WorkSamsung\\xml\\data\\RochesterMedium1USM_ACPF_70900100.xml"
+#res_file = "C:\\Users\\user\\WorkSamsung\\xml\\b.xml"
+output_conf_file = "C:\\Scripts\\xml\\output.conf"
+#output_conf_file = "C:\\Users\\user\\WorkSamsung\\xml\\output.conf"
 tree_res = ET.parse(res_file)
+
+output_file_name = "C:\\Scripts\\xml\\result.csv"
 
 root_res = tree_res.getroot()
 
@@ -193,10 +246,43 @@ while root_res and "managed-element" not in root_res.tag :
 tree_res = ET.ElementTree(root_res)
 root_res = tree_res.getroot()
 
+
+all_para = dict()
+short_para = dict()
+output_conf_list = list()
+f = open(output_conf_file,"r")
+output_conf_list = f.readlines()
+for i in range(len(output_conf_list)) :
+    output_conf_list[i] = output_conf_list[i].strip()
+
+
+#print(output_list)
+
 add_keys(root_res,"", "", {})
+#ET.dump(root_res)
+collect_all_para(root_res, output_conf_list)
+#print(output_conf_list)
+#print(all_para)
+
+para_list = list()
+for k in all_para.keys() :
+    for para in all_para[k] :
+        l1 = remove_ns(para)
+        l2 = l1.split("/")
+        l3 = l2[-1]
+        if l3 not in para_list :
+            para_list.append(l3)
+#print(para_list)
+output_list = list()
+add_dict2(root_res, output_list)
+#print(output_list)
+write_file(output_list,output_file_name)
+
+'''
 #tree_res.write("C:\\Scripts\\xml\\a.xml")
 #dom = pretty.parse("C:\\Scripts\\xml\\a.xml")
 #pretty_xml_as_string = dom.toprettyxml()
+
 
 
 if req_enabled :
@@ -229,3 +315,4 @@ while q_res :
 
 
 #print(pretty_xml_as_string)
+'''

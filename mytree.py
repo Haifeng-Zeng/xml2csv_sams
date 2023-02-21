@@ -69,11 +69,12 @@ def read_command_line_args() :
     parser.add_argument("--output", "-o", action="store", dest="output_file", type=str , help="output csv file, mandatory")
     parser.add_argument("--cmdfile", "-m", action="store", dest="cmd_file",type=str , help="command file, optional")
 
-    parser.add_argument("res_files", nargs="+", help="response file(s)")
+    parser.add_argument("res_files", nargs="+", help="response file(s), mandatory")
 
     if platform.system() == "Windows" :
         # for windows
         #parser.add_argument("third_files", help="Read xml files")
+        res_files = glob.glob(args.third_files)
         pass
     elif platform.system() == "Linux" :
         #for linux
@@ -181,7 +182,64 @@ def read_tree_from_xml(xml_file) :
         print("Parsing ",xml_file, " failed")
         return(None)
     else :
+        ET.dump(p)
         return(p)
+
+
+def read_tree_from_xml2(xml_file) :
+    try :
+        tree = ET.parse(xml_file)
+    except :
+        print("Open file ", xml_file, " Failed!")
+        exit(1)
+    root = tree.getroot()
+    while True:
+#        if not root :
+#            return(None)
+        if not list(root) and remove_ns(root.tag) == "data" :
+            print("No")
+            node = ET.Element("managed-element")
+            for child in root :
+                node.append(child)
+            return(node)
+        for child in root :
+            print(list(root))
+            if remove_ns(child.tag) == "rpc-error" :
+                return(None)
+            elif remove_ns(child.tag) == "data" :
+                root = child
+            elif remove_ns(child.tag) == "managed-element" :
+                return child
+            else :
+                node = ET.Element("managed-element")
+                for child in root :
+                    node.append(child)
+                return(node)
+
+
+def read_tree_from_xml3(xml_file) :
+    try :
+        tree = ET.parse(xml_file)
+    except :
+        print("Open file ", xml_file, " Failed!")
+        exit(1)
+    root = tree.getroot()
+    while True:
+#        if not root :
+#            return(None)
+        for child in root :
+            print(list(root))
+            if remove_ns(child.tag) == "rpc-error" :
+                return(None)
+            elif remove_ns(child.tag) == "data" :
+                root = child
+            elif remove_ns(child.tag) == "managed-element" :
+                return child
+            else :
+                ele = ET.Element("managed-element")
+                for child in root :
+                    ele.append(child)
+                return(ele)
 
 
 def add_path(node, parent_path) :
@@ -234,6 +292,7 @@ def add_to_write_2(input_dict,usm_id, ne_id):
         write_dict[k] = v
 #        item.set("processed", "Yes")
     return(write_dict)
+
 
 def create_output(node, para_dict, usm_id, ne_id) :
     paras = list(para_dict.keys())
@@ -345,6 +404,16 @@ def create_output_2(node, para_dict, usm_id, ne_id) :
 def create_output_3(node, output_dict) :
     local_dict = output_dict.copy()
 
+    curr_path = node.get("path")
+    need_push = False
+    for pathes in para_dict.keys() :
+        if curr_path in pathes :
+            need_push = True
+            break
+    
+    if not need_push :
+        return
+
     queue = list()
     for child in node :
         if list(child) :
@@ -363,6 +432,31 @@ def create_output_3(node, output_dict) :
     else :
         for child in queue :
             create_output_3(child, local_dict)
+
+
+def create_output_4(node, output_dict) :
+    local_dict = output_dict.copy()
+
+    queue = list()
+    for child in node :
+        path = child.get("path")
+        if list(child) :
+            for pathes in para_dict.keys() :
+                if path in pathes :
+                    queue.append(child)
+                    break
+        if path in para_dict.keys() :
+            local_dict[path] = child.text
+
+    if not queue :
+        all_keys = local_dict.keys()
+        for k in para_dict.keys() :
+            if k not in all_keys :
+                local_dict[k] = ""
+        csv_list.append(add_to_write_2(local_dict, usm_id, ne_id))
+    else :
+        for child in queue :
+            create_output_4(child, local_dict)
 
 
 def write_file(write_list, file_name) :
@@ -399,6 +493,8 @@ def write_file_266(write_list, file_name, conf_file) :
             if k in ("USM_ID", "NE_ID") :
                 dict2[k] = dict1[k]
             else :
+                if v is None :
+                    v = ""
                 dict2[para_dict[k][1]] = v
         short_name_write_list.append(dict2)
 
@@ -466,20 +562,31 @@ def write_error_list(write_list, file_name) :
             csvfile.write(line+"\n")
 
 
+def create_fake_tree(node, start_path) :
+    paths = list(para_dict.keys())
+    path_list = start_path.spilt("/")
+    if not node.get("path") :
+        node.set("path", path_list[0])
+    for line in paths :
+        arr = line.spilt("/")
+    pass
 
+#(req_file, conf_file, output_file, res_files) = read_command_line_args()
 
-(req_file, conf_file, output_file, res_files) = read_command_line_args()
 #req_file = "C:\\Scripts\\xml\\cmd.xml"
 #res_files = ["C:\\Scripts\\xml\\re-BloomingtonLarge1USM_DU_5160143.xml","C:\\Scripts\\xml\\re-EastSyracuseMedium1USM_DU_10148.xml","C:\\Scripts\\xml\\re-YonkersSmall1USM_DU_4620050.xml"]
+res_files = ["C:\\Scripts\\xml\\6 files\\meneged-element\\BloomingtonLarge1USM_eNB_131025.xml"]
 #res_files = ["C:\\Scripts\\xml\\BloomingtonLarge1USM_eNB_101001.xml"]
-#conf_file = "C:\\Scripts\\xml\\conf1.conf"
+conf_file = "C:\\Scripts\\xml\\6 files\\meneged-element\\CONF_FILE_7_eNB.conf"
+output_file = "C:\\Scripts\\xml\\6 files\\meneged-element\\out.csv"
 
 para_dict = read_conf(conf_file)
+
 #print(para_dict)
 
-if req_file :
-    if not validate_conf_file(req_file, para_dict) :
-        sys.exit(1)
+#if req_file :
+#    if not validate_conf_file(req_file, para_dict) :
+#        sys.exit(1)
 
 csv_list = list()
 error_list = list()
@@ -489,20 +596,26 @@ for res_file in res_files:
     line = line.split("_")
     usm_id = line[0]
     ne_id = line[1] + "_" + line[2]
-    res_root = read_tree_from_xml(res_file)
-    if not res_root :
+    res_root = None
+    if type(res_root) == "NoneType" :
+        print("None")
+    res_root = read_tree_from_xml2(res_file)
+#    print(len(res_root))
+#    ET.dump(res_root)
+    if res_root is None :
+    #if not res_root :
         print("Parsing ", res_file, " failed")
         error_list.append(process_error_file(res_file))
         continue
     add_path(res_root,"")
-    #ET.dump(res_root)
+    ET.dump(res_root)
     output_dict = dict()
-    create_output_3(res_root, output_dict) 
+    create_output_4(res_root, output_dict) 
 
 
 #output_file_name = "results.csv"
 write_file_266(csv_list, output_file, conf_file)
-if error_list :
-    write_error_list(error_list,"err.csv")
+#if error_list :
+#    write_error_list(error_list,"err.csv")
 #print(csv_list)
 #ET.dump(res_root)

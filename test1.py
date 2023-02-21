@@ -1,16 +1,34 @@
-import xml.etree.ElementTree as ET
-import csv
 import sys
 
-res_file = "C:\\Scripts\\xml\\YonkersSmall1USM_ACPF_85945000.xml"
-tree1 = ET.parse(res_file)
 
-root1 = tree1.getroot()
+num = [0]
+k = 23
 
-ET.dump(tree1)
-while root1 and "managed-element" not in root1.tag :
-     root1 = root1[0]
-tree1 = ET.ElementTree(root1)
+num1 = num[::-1]
+num2 = list()
+ans = list()
+while k > 0 :
+    num2.append(k % 10)
+    k //= 10
 
-print("second dump")
-ET.dump(tree1)
+addition = 0
+i = 0
+while i < len(num1) and i < len(num2) :
+    ans.append((addition + num1[i] + num2[i]) % 10)
+    addition = (addition + num1[i] + num2[i]) // 10
+    i += 1
+
+while i < len(num1) :
+    ans.append((addition + num1[i]) % 10)
+    addition = (addition + num1[i]) // 10
+    i += 1
+
+while i < len(num2) :
+    ans.append((addition + num2[i]) % 10)
+    addition = (addition + num2[i]) // 10
+    i += 1
+if addition == 1 :
+     ans.append(1)
+
+print(ans[::-1])
+#return -1 if ans == 0 else -ans

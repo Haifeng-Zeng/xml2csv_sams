@@ -50,9 +50,6 @@ def add_keys(node, parent_path, parent_tag, carry_in) :
     for child in node :
         if list(child) :
             add_keys(child, current_path, node.tag, local_keys)
-
-# need to add all missing parameters
-# add this line just to test github
 #    ET.dump(node)
 #    print("Aaaa")
 
@@ -108,29 +105,33 @@ def write_file(node) :
 #    print(file_name)
 #    print(type(to_write[0]))
 
-    full_keys = set()
+    full_keys = list()
 
 # Add missing keys if the key is missing
     for item in to_write :
-        full_keys = full_keys.union(set(item.keys()))
+        for k in item.keys() :
+            if k not in full_keys :
+                full_keys.append(k)
     
+    sorted_items = list()
     for item in to_write :
-        current_keys = set(item.keys())
-        for k in full_keys.difference(current_keys) :
-            item[k] = ""
+        new_item = dict()
+        for k in full_keys :
+            if k in item.keys() :
+                new_item[k] = item[k]
+            else :
+                new_item[k] = ""
+        sorted_items.append(new_item)
+
 
     with open(file_name, 'w', newline = "", encoding="utf-8") as csvfile:
-        # use dictWriter, on python 3
-        #writer = csv.DictWriter(csvfile, fieldnames=to_write[0].keys())
-        #writer.writeheader()
-        #writer.writerows(to_write)
-
-        # use dictWriter, on python 2.6.6
-        fileds = list(to_write[0].keys())
-        writer = csv.DictWriter(csvfile, fieldnames=fileds)
-        #writer.writerow(fileds)
-        writer.writerows(to_write)
-
+        fields = list(sorted_items[0].keys())
+        #fileds = sorted_items[0].keys()
+        #writer = csv.DictWriter(csvfile, fieldnames=sorted_items[0].keys())
+        writer = csv.DictWriter(csvfile, fieldnames=fields)
+        #writer.writerow(fields)
+        writer.writeheader()
+        writer.writerows(sorted_items)
     
 def merge_keys_req(node_res, node_req) :
 
@@ -163,7 +164,7 @@ def merge_keys_req(node_res, node_req) :
 req_enabled = False
 req_file = ""
 
-'''
+
 if len(sys.argv) < 2 :
     print("Usage:\n", sys.argv[0], "<response file> [request command file]\n")
     sys.exit(0)
@@ -175,10 +176,11 @@ elif len(sys.argv) == 3 :
 else :
     print("Only tow parameters are allowed at most")
     sys.exit(0)
-'''
+
 
 #req_file = "C:\\Scripts\\xml\\multi_request.xml"
-res_file = "C:\\Scripts\\xml\\b.xml"
+#res_file = "C:\\Users\\user\\WorkSmasung\\xml\\YonkersSmall1USM_ACPF_85945000.xml"
+
 #es_file = "C:\\Scripts\\xml\\EastSyracuseMedium1USM_ACPF_71910100.xml"
 
 tree_res = ET.parse(res_file)

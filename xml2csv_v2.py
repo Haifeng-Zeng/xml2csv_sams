@@ -19,7 +19,6 @@
 import xml.etree.ElementTree as ET
 import csv
 import sys
-#import configparser # No configparser in python 2.6.6
 import os
 import argparse
 import glob
